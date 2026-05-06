@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLP with Limits — Story Map</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #F2F0EB;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 24px;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 20px;
+    border: 1px solid #E8E6E1;
+    padding: 32px 32px 40px;
+    width: 100%;
+    max-width: 1160px;
+  }
+
+  /* Title */
+  .doc-title { font-size: 20px; font-weight: 600; color: #0F1535; margin-bottom: 4px; }
+  .doc-sub { font-size: 13px; color: #94A3B8; margin-bottom: 28px; }
+
+  /* Legend */
+  .legend { display: flex; gap: 24px; margin-bottom: 24px; flex-wrap: wrap; }
+  .leg { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #888; }
+  .leg-sq { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+
+  /* Zone labels */
+  .zlbl { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #C0BEBA; margin-bottom: 14px; }
+
+  /* Vertical cards */
+  .vrow { display: flex; align-items: center; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+  .vc {
+    flex-shrink: 0; width: 130px; min-height: 80px;
+    border-radius: 14px; border: 1.5px solid #CECBF6;
+    background: #F0EFFE;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; text-align: center;
+    padding: 14px 10px; cursor: pointer; gap: 5px;
+    transition: border-color .2s, background .2s;
+    user-select: none;
+  }
+  .vc:hover { border-color: #AFA9EC; background: #E8E6FB; }
+  .vc.sel { border-color: #534AB7; background: #534AB7; }
+  .vc.sel .vid { color: #C4C0F0; }
+  .vc.sel .vt  { color: #fff; font-weight: 500; }
+  .vid { font-size: 11px; font-weight: 600; color: #7F77DD; letter-spacing: .04em; transition: color .2s; }
+  .vt  { font-size: 12.5px; line-height: 1.4; color: #3C3489; transition: color .2s; }
+
+  /* Arrows */
+  .arr { flex-shrink: 0; padding: 0 6px; display: flex; align-items: center; }
+
+  /* Arc area */
+  .arcwrap { position: relative; width: 100%; overflow: visible; }
+  #asvg { display: block; width: 100%; overflow: visible; pointer-events: none; }
+
+  /* Cross-cut cards */
+  .crow { display: flex; gap: 12px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+  .cc {
+    flex-shrink: 0; width: 158px; min-height: 70px;
+    border-radius: 14px; border: 1.5px solid #9FE1CB;
+    background: #EBF8F3;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; text-align: center;
+    padding: 14px 10px; cursor: pointer; gap: 5px;
+    transition: border-color .2s, background .2s, opacity .2s;
+    user-select: none;
+  }
+  .cc:hover { border-color: #5DCAA5; background: #DCF4EC; }
+  .cc.hi  { border-color: #0F6E56; background: #DCF4EC; }
+  .cc.hi .cid { color: #0F6E56; }
+  .cc.hi .ct  { color: #085041; font-weight: 500; }
+  .cc.dim { opacity: .22; }
+  .cid { font-size: 11px; font-weight: 600; color: #1D9E75; letter-spacing: .04em; transition: color .2s; }
+  .ct  { font-size: 12.5px; line-height: 1.4; color: #085041; transition: color .2s; }
+
+  /* Divider */
+  .div { height: 1px; background: #EEECEA; margin: 20px 0 18px; }
+
+  /* Panel */
+  .panel { margin-top: 22px; border-radius: 16px; border: 1px solid #EEECEA; background: #FAFAF9; overflow: hidden; }
+  .phd { padding: 18px 22px 16px; border-bottom: 1px solid #EEECEA; display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .pid  { font-size: 10px; font-weight: 600; letter-spacing: .06em; margin-bottom: 4px; }
+  .ptit { font-size: 17px; font-weight: 500; color: #111; line-height: 1.3; }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; align-items: center; }
+  .pill { font-size: 10px; padding: 3px 10px; border-radius: 999px; font-weight: 500; }
+  .pv   { background: #EEEDFE; color: #3C3489; }
+  .pc   { background: #E1F5EE; color: #085041; }
+  .ps   { background: #E6F1FB; color: #0C447C; }
+  .pt   { background: #F5F5F3; border: .5px solid #DDD; color: #666; cursor: pointer; transition: all .15s; }
+  .pt:hover { border-color: #1D9E75; color: #1D9E75; }
+  .xb { width: 32px; height: 32px; border-radius: 8px; border: 1px solid #E5E3DF; background: #F5F5F3; cursor: pointer; font-size: 14px; color: #999; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: border-color .15s; line-height: 1; }
+  .xb:hover { border-color: #CCC; color: #555; }
+  .pb  { padding: 0; }
+
+  /* Story table inside panel */
+  .stbl { width: 100%; border-collapse: collapse; }
+  .stbl th { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #C0BEBA; padding: 12px 16px; text-align: left; border-bottom: 1px solid #EEECEA; background: #FAFAF9; }
+  .stbl th:first-child { width: 180px; }
+  .stbl th:last-child  { width: 90px; }
+  .stbl td { padding: 14px 16px; vertical-align: top; border-bottom: 1px solid #F3F2F0; font-size: 13px; line-height: 1.6; color: #444; }
+  .stbl tr:last-child td { border-bottom: none; }
+  .stbl tr:hover td { background: #F7F6F5; }
+  .sc  { font-size: 11px; font-weight: 600; margin-bottom: 2px; }
+  .sc.v { color: #7F77DD; }
+  .sc.c { color: #1D9E75; }
+  .scsub { font-size: 11px; color: #AAA; }
+  .sbody { color: #333; font-size: 13px; line-height: 1.65; }
+  .sbody p { margin-bottom: 6px; }
+  .sbody p:last-child { margin-bottom: 0; }
+  .sbody ul { margin: 4px 0 4px 16px; }
+  .sbody li { margin-bottom: 3px; color: #555; }
+  .sbody strong { font-weight: 500; color: #222; }
+  .ref-cell { font-size: 11px; color: #BBB; line-height: 1.5; }
+  .touched-row { display: flex; gap: 5px; margin-top: 6px; flex-wrap: wrap; align-items: center; }
+  .touched-lbl { font-size: 10px; color: #AAA; }
+
+  /* Consolidation note */
+  .note-bar { background: #F5F4FE; border-left: 3px solid #7F77DD; border-radius: 8px; padding: 10px 16px; margin-bottom: 28px; font-size: 12px; color: #555; line-height: 1.5; }
+  .note-bar strong { color: #5340B3; }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="doc-title">MLP with Limits — Story Map</div>
+  <div class="doc-sub">5 Lifecycle Verticals · 4 Cross-cutting Stories · Updated May 2026</div>
+
+  <div class="note-bar">
+    <strong>Consolidation note:</strong> Previously 9 verticals — Review & Proceed, Auth Flow, and Limit State Management are now sub-sections within V4 and C1. Open design decisions removed from V2 Status Chips and Navigation Tabs.
+  </div>
+
+  <div class="legend">
+    <div class="leg"><div class="leg-sq" style="background:#F0EFFE;border:1.5px solid #CECBF6"></div><span>Lifecycle vertical — click to expand</span></div>
+    <div class="leg"><div class="leg-sq" style="background:#EBF8F3;border:1.5px solid #9FE1CB"></div><span>Cross-cutting story — spans connected verticals</span></div>
+  </div>
+
+  <div class="zlbl">Lifecycle (vertical)</div>
+  <div class="vrow" id="vrow">
+    <div class="vc" data-id="V1" onclick="tap('V1')"><div class="vid">V1</div><div class="vt">Payment<br>Creation &<br>Routing</div></div>
+    <div class="arr"><svg width="22" height="10" viewBox="0 0 22 10"><line x1="0" y1="5" x2="15" y2="5" stroke="#CECBF6" stroke-width="1.5"/><polyline points="11,1 17,5 11,9" fill="none" stroke="#CECBF6" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div>
+    <div class="vc" data-id="V2" onclick="tap('V2')"><div class="vid">V2</div><div class="vt">In Queue<br>View &<br>Navigate</div></div>
+    <div class="arr"><svg width="22" height="10" viewBox="0 0 22 10"><line x1="0" y1="5" x2="15" y2="5" stroke="#CECBF6" stroke-width="1.5"/><polyline points="11,1 17,5 11,9" fill="none" stroke="#CECBF6" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div>
+    <div class="vc" data-id="V3" onclick="tap('V3')"><div class="vid">V3</div><div class="vt">Select<br>Payments</div></div>
+    <div class="arr"><svg width="22" height="10" viewBox="0 0 22 10"><line x1="0" y1="5" x2="15" y2="5" stroke="#CECBF6" stroke-width="1.5"/><polyline points="11,1 17,5 11,9" fill="none" stroke="#CECBF6" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div>
+    <div class="vc" data-id="V4" onclick="tap('V4')"><div class="vid">V4</div><div class="vt">Take<br>Action</div></div>
+    <div class="arr"><svg width="22" height="10" viewBox="0 0 22 10"><line x1="0" y1="5" x2="15" y2="5" stroke="#CECBF6" stroke-width="1.5"/><polyline points="11,1 17,5 11,9" fill="none" stroke="#CECBF6" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div>
+    <div class="vc" data-id="V5" onclick="tap('V5')"><div class="vid">V5</div><div class="vt">Reject<br>Creator &<br>Always-on</div></div>
+  </div>
+
+  <div class="arcwrap" id="arcwrap" style="height:16px"><svg id="asvg" height="16"></svg></div>
+
+  <div class="div"></div>
+  <div class="zlbl">Cross-cutting (horizontal)</div>
+  <div class="crow" id="crow">
+    <div class="cc" data-id="C1" onclick="tap('C1')"><div class="cid">C1</div><div class="ct">Limit<br>Awareness</div></div>
+    <div class="cc" data-id="C2" onclick="tap('C2')"><div class="cid">C2</div><div class="ct">Role-based<br>View</div></div>
+    <div class="cc" data-id="C3" onclick="tap('C3')"><div class="cid">C3</div><div class="ct">Multi-account<br>Behaviour</div></div>
+    <div class="cc" data-id="C4" onclick="tap('C4')"><div class="cid">C4</div><div class="ct">Notifications</div></div>
+  </div>
+
+  <div id="pa"></div>
+</div>
+
+<script>
+const cn = {
+  C1: ['V3','V4'],
+  C2: ['V1','V2','V3','V4','V5'],
+  C3: ['V2','V3','V4'],
+  C4: ['V1','V4','V5'],
+};
+
+const D = {
+  V1:{type:'v',title:'Payment Creation & Routing',spans:null,rows:[
+    {screen:'Payments → Creation',sub:'Creator submits',story:'FC (Creator) or Admin submits a payment. System evaluates the configured approval rule and the payment enters the workflow immediately.'},
+    {screen:'Pending on Others',sub:'Payment state on creation',story:'Payment enters <strong>Pending Approval</strong> state immediately. Does not appear in the creator\'s Pending on Me tab. Creator is navigated automatically to <strong>Pending on Others</strong> — specifically to the exact bank account sub-tab of the created payment.'},
+    {screen:'Pending on Others',sub:'L0 & L1 views',story:'<strong>L0 row shows:</strong> Beneficiary, Amount, Status chip (Pending Approval), approval progress bar (Level 1 of 2), Action required from.<br><strong>L1 sidebar shows:</strong> Full payment details, step-by-step approval progress tracker (updates in real time), Comments & Docs tab. No Approve or Authorise buttons.'},
+    {screen:'Pending on Others',sub:'Creator actions',story:'<ul><li>Creator <strong>cannot approve their own payment</strong> — maker-checker rule</li><li><strong>Reject is always available</strong> at any stage — creator\'s only action lever while payment is in the approval chain</li><li>L0 progress bar and L1 tracker update in real time as approvers act</li></ul>'},
+    {screen:'Approval routing',sub:'Sequential & Parallel',story:'<strong>Sequential:</strong> Level 1 approver acts → payment moves to Level 2 queue. Creator\'s progress tracker updates at each step.<br><strong>Parallel (m of n):</strong> Payment appears in all approvers\' queues simultaneously. Advances once the required number approve.<br><strong>Final level:</strong> Payment moves to Pending Auth → appears in authoriser\'s In Queue. Full auth flow in V4.'},
+    {screen:'Routing',sub:'Limit check timing',story:'Routing itself does not check limits. A payment can be routed to an approver whose limit is exhausted — they will see it with Approve disabled and the appropriate tooltip. Limits are enforced only at the moment of action (see C1).'},
+  ]},
+  V2:{type:'v',title:'In Queue — View & Navigate',spans:null,rows:[
+    {screen:'In Queue',sub:'Landing & layout',story:'One tab per connected bank account. Payment list shows: Beneficiary, Bank account, Amount, Status chip, Approval progress bar, Pay method, Action required from. Default sub-tab: All.'},
+    {screen:'In Queue',sub:'Filters & sort',story:'<strong>Sub-tabs:</strong> All (default), Pending Approval, Ready to Authorise.<br><strong>Quick filters:</strong> Overdue, High Priority, Hide on-hold. Multiple active simultaneously.<br><strong>Sort:</strong> Recommended (default) or Last Updated.'},
+    {screen:'In Queue',sub:'Status chips',story:'<strong>Pending Approval</strong> — mid-approval, one or more levels outstanding. Approve + Reject relevant.<br><strong>Ready to Authorise</strong> — all approval levels complete, waiting to be sent to bank. Authorise + Reject relevant.'},
+    {screen:'Navigation tabs',sub:'Pending on Me',story:'Default active tab on landing. Shows payments where the admin\'s action is directly required — approve or authorise. All Approve, Authorise, and Reject actions available. Sub-tabs filter within this view.'},
+    {screen:'Navigation tabs',sub:'Pending on Others',story:'Payments in progress but waiting on a different user\'s action. Includes:<ul><li>Payments the admin created (maker-checker)</li><li>Payments at an approval level assigned to another approver</li><li>Payments waiting for a different authoriser</li></ul><strong>Read-only:</strong> no Approve or Authorise buttons. Reject available to the payment creator. Visible per row: Beneficiary, Amount, Status, Who the next action is pending from.'},
+    {screen:'Navigation tabs',sub:'All Transactions',story:'Historical read-only record of all fully processed payments — Completed and Rejected. Shows: Beneficiary, Amount, Payment date, Final status, Actioned by. Used for audit, reconciliation, and history. No actions available.'},
+  ]},
+  V3:{type:'v',title:'Select Payments',spans:null,rows:[
+    {screen:'In Queue → row click',sub:'L1 drawer',story:'Clicking any payment row opens the L1 detail drawer. Shows: Details tab (Beneficiary, amount, method, bill reference, approval progress tracker) and Comments & Docs tab. Actions: Approve (if within limit), Authorise (if within limit), Reject (always enabled).'},
+    {screen:'In Queue → checkboxes',sub:'Bulk selection',story:'Admin checks multiple rows. Sticky selection bar appears showing count, total value split into "For approval (Rs X)" and "For authorisation (Rs Y)". Proceed button enabled when within limits.'},
+    {screen:'Selection bar',sub:'Per-payment limit block',story:'If a payment exceeds the per-payment limit, its checkbox is disabled. Tooltip: <strong>"This payment exceeds your per-payment authorisation limit."</strong> Other rows unaffected.'},
+    {screen:'Selection bar',sub:'Aggregate limit block',story:'Running total tracked in real time. When aggregate crosses remaining daily limit, Proceed is disabled. Bar shows: <strong>"Selected total exceeds your remaining daily limit."</strong> Admin must deselect to recover — no override.'},
+  ]},
+  V4:{type:'v',title:'Take Action (Approve / Authorise / Reject)',spans:null,rows:[
+    {screen:'In Queue → Approve',sub:'Single & Bulk',story:'Single: no OTP required. Approval progress bar updates immediately. If final level → moves to Pending Auth. If more levels → routes to next approver.<br>Bulk: single Transaction Password + OTP flow covers all. Each decrements the daily approval counter.'},
+    {screen:'In Queue → Approve',sub:'Limit states',story:'<strong>Blocked:</strong> Red banner — "Your daily approval limit has been reached." Approve disabled. Reject active. Authorise active if auth limit has headroom.<br><strong>Available (auth exhausted):</strong> Approve remains fully enabled independently.'},
+    {screen:'In Queue → Authorise',sub:'Single & Bulk',story:'Admin clicks Authorise on Ready to Authorise payment. Routes through auth flow. On success: payment moves to All Transactions, row disappears from In Queue, daily auth counter decrements.<br>Bulk: single auth flow covers all selected payments.'},
+    {screen:'In Queue → Authorise',sub:'Limit states',story:'<strong>Blocked:</strong> Red banner — "Your daily authorisation limit has been reached." Authorise disabled. Approve active if approval limit has headroom.<br><strong>Available (approval exhausted):</strong> Authorise remains fully enabled independently.'},
+    {screen:'In Queue → Reject',sub:'Approver / Authoriser reject',story:'Available at Pending Approval and Ready to Authorise stages. Reason modal — mandatory. On confirmation: Rejected state, creator notified with reason, audit log updated. No OTP or transaction password required.'},
+    {screen:'Review modal',sub:'Review & Proceed',story:'Clicking Proceed opens "Review selected actions" modal. Lists selected payments, breakdown of X for approval (Rs A) and Y for authorisation (Rs B), grand total. Cancel returns to In Queue with selection intact. Continue routes to Transaction Password.'},
+    {screen:'Auth flow',sub:'Password → OTP → Processing',story:'<strong>Transaction password:</strong> Correct → OTP. Incorrect → inline error with retry count. Max retries → session blocked.<br><strong>OTP:</strong> 6-digit, sent to email + phone, 60s timer. Resend after expiry. Max failures → restart.<br><strong>Processing:</strong> "Sending to bank / do not close." Success → In Queue updated. Failure → inline error with retry.'},
+  ]},
+  V5:{type:'v',title:'Reject — Creator & Always-on',spans:null,rows:[
+    {screen:'Pending on Others',sub:'Creator reject — any stage',story:'Creator can reject their own payment at any point — mid-approval, final level, or before auth. Available in both L0 (row action) and L1 (sidebar). Always visible and enabled regardless of limit state.'},
+    {screen:'Rejection modal',sub:'Mandatory reason',story:'Tapping Reject opens a reason modal. Reason is mandatory — blank triggers error: <strong>"Rejection reason is required."</strong> On confirmation: Rejected immediately, removed from all approver queues, all prior approvers notified with reason.'},
+    {screen:'All views',sub:'Always-on reject rule',story:'Reject is <strong>never disabled by limit state</strong> for any role. Even when both daily limits are fully exhausted, all Reject buttons remain fully enabled across every row and every L1 sidebar.<br>Applies to: Admin, FC (Creator + Approver), Payment Manager, and the payment creator from Pending on Others.<br>Reject does not decrement any daily limit. No OTP or transaction password required.'},
+  ]},
+  C1:{type:'c',title:'Limit Awareness',spans:'V3, V4',rows:[
+    {screen:'Cross-cut',sub:'Banner system',story:'<strong>No banner</strong> — both limits within range, all actions enabled.<br><strong>Amber banner</strong> — approaching ~80%, all actions still enabled, remaining headroom shown.<br><strong>Red banner</strong> — exhausted, affected action disabled. Single combined banner when both limits are in warning/exhausted state simultaneously.'},
+    {screen:'Cross-cut',sub:'Independent button logic',story:'Approve and Authorise are controlled by their own limits independently. One can be disabled while the other remains active. Both are only simultaneously disabled when both limits are exhausted. Shared disabled state is never allowed.'},
+    {screen:'Cross-cut',sub:'Tooltips — never silent',story:'Disabled checkbox: "This payment exceeds your per-payment authorisation limit."<br>Disabled Approve/Authorise: "Your daily [approval/authorisation] limit has been reached."<br>Disabled Proceed: "Selected total exceeds your remaining daily limit."'},
+    {screen:'Cross-cut',sub:'Limit state management',story:'<strong>Normal:</strong> no banner.<br><strong>Amber:</strong> ~80% used, warning only.<br><strong>Red (single):</strong> one limit exhausted, one action disabled.<br><strong>Red (both):</strong> single combined banner, both actions disabled.<br><strong>Mixed:</strong> single red banner covers exhausted + approaching.<br><strong>Daily reset:</strong> midnight IST, automatic, no admin action.'},
+  ]},
+  C2:{type:'c',title:'Role-based View',spans:'V1 → V5',rows:[
+    {screen:'Cross-cut',sub:'Role definitions',story:'<strong>Admin:</strong> approve + authorise, both limits, all tabs.<br><strong>FC Creator only:</strong> create only, no limits, Pending on Others only, no Approve/Authorise buttons.<br><strong>FC Creator + Approver:</strong> approve only, approval limit only, Authorise never shown.<br><strong>Payment Manager (new):</strong> approve only, approval limit only, Authorise never shown.'},
+    {screen:'Cross-cut',sub:'Button & tab visibility',story:'Authorise only shown to Admin. Approve shown to Admin, FC Approver, Payment Manager.<br><strong>Tabs:</strong> Admin — all tabs. FC Creator + Approver — Pending on Me, Pending on Others. Payment Manager — Pending on Me only. FC Creator — Pending on Others only.<br><strong>Banners:</strong> Admin — both. FC/PM Approver — approval only. FC Creator — none.'},
+  ]},
+  C3:{type:'c',title:'Multi-account Behaviour',spans:'V2 → V4',rows:[
+    {screen:'Cross-cut',sub:'Bank account tabs',story:'One tab per connected bank account. Each tab maintains its own sub-tab selection, banner state, filter and sort selections independently.'},
+    {screen:'Cross-cut',sub:'Split limit states',story:'Yes Bank: approval exhausted → Approve disabled, auth active.<br>IDFC: auth exhausted → Authorise disabled, approve active.<br>Tab states must not bleed into each other. Banner updates immediately on tab switch.'},
+    {screen:'Cross-cut',sub:'User-level counter',story:'Daily limits are per user, not per bank account. Approving Rs X on Yes Bank reduces the same counter that applies to IDFC approvals. Switching tabs does not reset or increase the admin\'s limit. Remaining headroom in banners reflects total across all accounts.'},
+  ]},
+  C4:{type:'c',title:'Notifications',spans:'V1, V4, V5',rows:[
+    {screen:'Cross-cut',sub:'Aggregated via Vidya',story:'Moving from one-to-one to aggregated digests via Vidya. Events of the same type grouped into a single notification showing: event type, number of payments, total amount, deep link to In Queue.'},
+    {screen:'Cross-cut',sub:'Triggers',story:'<strong>Payment created & routed:</strong> first approver notified. Aggregated.<br><strong>Approval completed:</strong> next approver or authoriser notified. Aggregated.<br><strong>Authorisation completed:</strong> creator + stakeholders notified with reference, amount, beneficiary. Aggregated.<br><strong>Rejection:</strong> creator notified immediately with reason. NOT aggregated — each rejection is individual.'},
+  ]},
+};
+
+let act = null;
+
+function midX(el) {
+  const card = document.querySelector('.card');
+  const cr = card.getBoundingClientRect();
+  const er = el.getBoundingClientRect();
+  return er.left - cr.left + er.width / 2;
+}
+
+function drawArcs(vid) {
+  const svg = document.getElementById('asvg');
+  const wrap = document.getElementById('arcwrap');
+  svg.innerHTML = '';
+  if (!vid) { wrap.style.height='16px'; svg.setAttribute('height','16'); return; }
+  const vEl = document.querySelector(`.vc[data-id="${vid}"]`);
+  if (!vEl) { wrap.style.height='16px'; return; }
+  const hits = Object.entries(cn).filter(([c,vs])=>vs.includes(vid)).map(([c])=>c);
+  if (!hits.length) { wrap.style.height='16px'; return; }
+  const H = 88;
+  wrap.style.height = H+'px';
+  const W = wrap.offsetWidth||900;
+  svg.setAttribute('width',W); svg.setAttribute('height',H); svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const x1 = midX(vEl);
+  hits.forEach(cid => {
+    const cEl = document.querySelector(`.cc[data-id="${cid}"]`);
+    if (!cEl) return;
+    const x2 = midX(cEl);
+    const dx = x2 - x1;
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',`M ${x1} 4 C ${x1+dx*0.05} 55, ${x2-dx*0.05} 55, ${x2} ${H-4}`);
+    path.setAttribute('fill','none'); path.setAttribute('stroke','#F0A830');
+    path.setAttribute('stroke-width','1.8'); path.setAttribute('stroke-dasharray','5,4');
+    path.setAttribute('stroke-linecap','round');
+    svg.appendChild(path);
+    const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    dot.setAttribute('cx',x2); dot.setAttribute('cy',H-4);
+    dot.setAttribute('r','3.5'); dot.setAttribute('fill','#F0A830');
+    svg.appendChild(dot);
+  });
+}
+
+function tap(id) {
+  act = (act === id) ? null : id;
+  render();
+}
+
+function render() {
+  const isV = act && D[act] && D[act].type==='v';
+  const isC = act && D[act] && D[act].type==='c';
+
+  document.querySelectorAll('.vc').forEach(c => c.classList.toggle('sel', c.dataset.id===act));
+  document.querySelectorAll('.cc').forEach(c => {
+    const cid = c.dataset.id;
+    c.classList.remove('hi','dim');
+    if (!act) return;
+    if (isV) { const hit=cn[cid]&&cn[cid].includes(act); c.classList.toggle('hi',hit); c.classList.toggle('dim',!hit); }
+    else if (isC) { c.classList.toggle('hi', cid===act); }
+  });
+
+  isV ? drawArcs(act) : drawArcs(null);
+
+  const area = document.getElementById('pa');
+  if (!act) { area.innerHTML=''; return; }
+  const d = D[act];
+  const col = isV?'#7F77DD':'#1D9E75';
+  const sp = d.spans ? `<span class="pill ps">spans ${d.spans}</span>` : '';
+  const touches = isV
+    ? Object.entries(cn).filter(([c,vs])=>vs.includes(act)).map(([c])=>`<span class="pill pt" onclick="tap('${c}')">${c} ↗</span>`).join('')
+    : '';
+  const touchRow = touches ? `<div class="touched-row"><span class="touched-lbl">touched by</span>${touches}</div>` : '';
+  const scClass = isV ? 'v' : 'c';
+
+  const rows = d.rows.map(r => `
+    <tr>
+      <td><div class="sc ${scClass}">${r.screen}</div>${r.sub?`<div class="scsub">${r.sub}</div>`:''}</td>
+      <td><div class="sbody">${r.story}</div></td>
+      <td><div class="ref-cell">—</div></td>
+    </tr>`).join('');
+
+  area.innerHTML = `<div class="panel">
+    <div class="phd">
+      <div>
+        <div class="pid" style="color:${col}">${act}</div>
+        <div class="ptit">${d.title}</div>
+        <div class="tags">
+          <span class="pill ${isV?'pv':'pc'}">${isV?'Lifecycle vertical':'Cross-cutting'}</span>
+          ${sp}
+        </div>
+        ${touchRow}
+      </div>
+      <button class="xb" onclick="tap('${act}')">✕</button>
+    </div>
+    <div class="pb">
+      <table class="stbl">
+        <thead><tr><th>Section</th><th>Story</th><th>Ref</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+window.addEventListener('resize', ()=>{ if(act&&D[act]&&D[act].type==='v') drawArcs(act); });
+</script>
+</body>
+</html>
