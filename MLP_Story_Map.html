@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLP with Limits — Story Map</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #F2F0EB;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 24px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 20px;
+    border: 1px solid #E8E6E1;
+    padding: 32px 32px 40px;
+    width: 100%;
+    max-width: 1200px;
+  }
+  .doc-title { font-size: 20px; font-weight: 600; color: #0F1535; margin-bottom: 4px; }
+  .doc-sub { font-size: 13px; color: #94A3B8; margin-bottom: 24px; }
+  .legend { display: flex; gap: 24px; margin-bottom: 24px; flex-wrap: wrap; }
+  .leg { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #888; }
+  .leg-sq { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+  .zlbl { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #C0BEBA; margin-bottom: 14px; }
+  .vrow { display: flex; align-items: center; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+  .vc {
+    flex-shrink: 0; width: 136px; min-height: 82px;
+    border-radius: 14px; border: 1.5px solid #CECBF6;
+    background: #F0EFFE;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; text-align: center;
+    padding: 14px 10px; cursor: pointer; gap: 5px;
+    transition: border-color .2s, background .2s;
+    user-select: none;
+  }
+  .vc:hover { border-color: #AFA9EC; background: #E8E6FB; }
+  .vc.sel { border-color: #534AB7; background: #534AB7; }
+  .vc.sel .vid { color: #C4C0F0; }
+  .vc.sel .vt  { color: #fff; font-weight: 500; }
+  .vid { font-size: 11px; font-weight: 600; color: #7F77DD; letter-spacing: .04em; transition: color .2s; }
+  .vt  { font-size: 12px; line-height: 1.4; color: #3C3489; transition: color .2s; }
+  .arr { flex-shrink: 0; padding: 0 6px; display: flex; align-items: center; }
+  .arcwrap { position: relative; width: 100%; overflow: visible; }
+  #asvg { display: block; width: 100%; overflow: visible; pointer-events: none; }
+  .crow { display: flex; gap: 12px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+  .cc {
+    flex-shrink: 0; width: 165px; min-height: 70px;
+    border-radius: 14px; border: 1.5px solid #9FE1CB;
+    background: #EBF8F3;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; text-align: center;
+    padding: 14px 10px; cursor: pointer; gap: 5px;
+    transition: border-color .2s, background .2s, opacity .2s;
+    user-select: none;
+  }
+  .cc:hover { border-color: #5DCAA5; background: #DCF4EC; }
+  .cc.hi  { border-color: #0F6E56; background: #DCF4EC; }
+  .cc.hi .cid { color: #0F6E56; }
+  .cc.hi .ct  { color: #085041; font-weight: 500; }
+  .cc.dim { opacity: .22; }
+  .cid { font-size: 11px; font-weight: 600; color: #1D9E75; letter-spacing: .04em; transition: color .2s; }
+  .ct  { font-size: 12px; line-height: 1.4; color: #085041; transition: color .2s; }
+  .div { height: 1px; background: #EEECEA; margin: 20px 0 18px; }
+  .panel { margin-top: 22px; border-radius: 16px; border: 1px solid #EEECEA; background: #FAFAF9; overflow: hidden; }
+  .phd { padding: 18px 22px 16px; border-bottom: 1px solid #EEECEA; display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .pid  { font-size: 10px; font-weight: 600; letter-spacing: .06em; margin-bottom: 4px; }
+  .ptit { font-size: 17px; font-weight: 500; color: #111; line-height: 1.3; }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; align-items: center; }
+  .pill { font-size: 10px; padding: 3px 10px; border-radius: 999px; font-weight: 500; }
+  .pv { background: #EEEDFE; color: #3C3489; }
+  .pc { background: #E1F5EE; color: #085041; }
+  .ps { background: #E6F1FB; color: #0C447C; }
+  .pt { background: #F5F5F3; border: .5px solid #DDD; color: #666; cursor: pointer; transition: all .15s; }
+  .pt:hover { border-color: #1D9E75; color: #1D9E75; }
+  .xb { width: 32px; height: 32px; border-radius: 8px; border: 1px solid #E5E3DF; background: #F5F5F3; cursor: pointer; font-size: 14px; color: #999; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .xb:hover { border-color: #CCC; color: #555; }
+  .stbl { width: 100%; border-collapse: collapse; }
+  .stbl th { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #C0BEBA; padding: 12px 16px; text-align: left; border-bottom: 1px solid #EEECEA; background: #FAFAF9; }
+  .stbl th:first-child { width: 200px; }
+  .stbl th:last-child  { width: 80px; }
+  .stbl td { padding: 13px 16px; vertical-align: top; border-bottom: 1px solid #F3F2F0; font-size: 13px; line-height: 1.6; color: #444; }
+  .stbl tr:last-child td { border-bottom: none; }
+  .stbl tr:hover td { background: #F7F6F5; }
+  .sc { font-size: 11px; font-weight: 600; margin-bottom: 2px; color: #7F77DD; }
+  .sc.c { color: #1D9E75; }
+  .sbody { color: #333; font-size: 13px; line-height: 1.65; }
+  .sbody ul { margin: 4px 0 4px 16px; }
+  .sbody li { margin-bottom: 3px; color: #555; }
+  .sbody strong { font-weight: 500; color: #222; }
+  .ref-cell { font-size: 11px; color: #BBB; }
+  .touched-row { display: flex; gap: 5px; margin-top: 6px; flex-wrap: wrap; align-items: center; }
+  .touched-lbl { font-size: 10px; color: #AAA; }
+  .note-bar { background: #F5F4FE; border-left: 3px solid #7F77DD; border-radius: 8px; padding: 10px 16px; margin-bottom: 24px; font-size: 12px; color: #555; line-height: 1.5; }
+  .note-bar strong { color: #5340B3; }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="doc-title">MLP with Limits — Story Map</div>
+  <div class="doc-sub">4 Lifecycle Verticals · 3 Cross-cutting Stories · Version May 2026</div>
+
+
+
+  <div class="legend">
+    <div class="leg"><div class="leg-sq" style="background:#F0EFFE;border:1.5px solid #CECBF6"></div><span>Lifecycle vertical — click to expand</span></div>
+    <div class="leg"><div class="leg-sq" style="background:#EBF8F3;border:1.5px solid #9FE1CB"></div><span>Cross-cutting story — spans connected verticals</span></div>
+  </div>
+
+  <div class="zlbl">Lifecycle (vertical)</div>
+  <div class="vrow" id="vrow">
+    <div class="vc" data-id="V1" onclick="tap('V1')"><div class="vid">V1</div><div class="vt">Payments<br>Sections<br>&amp; Tabs</div></div>
+    <div class="arr"><svg width="22" height="10" viewBox="0 0 22 10"><line x1="0" y1="5" x2="15" y2="5" stroke="#CECBF6" stroke-width="1.5"/><polyline points="11,1 17,5 11,9" fill="none" stroke="#CECBF6" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div>
+    <div class="vc" data-id="V2" onclick="tap('V2')"><div class="vid">V2</div><div class="vt">Payment<br>Creation<br>(Pending on Others)</div></div>
+    <div class="arr"><svg width="22" height="10" viewBox="0 0 22 10"><line x1="0" y1="5" x2="15" y2="5" stroke="#CECBF6" stroke-width="1.5"/><polyline points="11,1 17,5 11,9" fill="none" stroke="#CECBF6" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div>
+    <div class="vc" data-id="V3" onclick="tap('V3')"><div class="vid">V3</div><div class="vt">Approve,<br>Authorise<br>&amp; Reject</div></div>
+    <div class="arr"><svg width="22" height="10" viewBox="0 0 22 10"><line x1="0" y1="5" x2="15" y2="5" stroke="#CECBF6" stroke-width="1.5"/><polyline points="11,1 17,5 11,9" fill="none" stroke="#CECBF6" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div>
+    <div class="vc" data-id="V4" onclick="tap('V4')"><div class="vid">V4</div><div class="vt">Payments<br>Processed<br>(All Transactions)</div></div>
+  </div>
+
+  <div class="arcwrap" id="arcwrap" style="height:16px"><svg id="asvg" height="16"></svg></div>
+
+  <div class="div"></div>
+  <div class="zlbl">Cross-cutting (horizontal)</div>
+  <div class="crow" id="crow">
+    <div class="cc" data-id="C1" onclick="tap('C1')"><div class="cid">C1</div><div class="ct">Limit<br>Awareness</div></div>
+    <div class="cc" data-id="C2" onclick="tap('C2')"><div class="cid">C2</div><div class="ct">Maker Checker<br>&amp; Role-based<br>Access</div></div>
+    <div class="cc" data-id="C3" onclick="tap('C3')"><div class="cid">C3</div><div class="ct">Notifications<br>&amp; Audit Trail</div></div>
+  </div>
+
+  <div id="pa"></div>
+</div>
+
+<script>
+const cn = {
+  C1: ['V2','V3'],
+  C2: ['V1','V2','V3','V4'],
+  C3: ['V2','V3','V4'],
+};
+
+const D = {
+  V1:{type:'v',title:'Payments — Sections & Tabs',rows:[
+    {sc:'Left Nav',story:'As a Finance Controller or Admin, I want to navigate the Payments section through clearly defined tabs so that I can quickly find payments needing my action, payments waiting on others, and a full history of processed payments.'},
+    {sc:'Left Nav — 4 sections',story:'<ul><li><strong>Ready to Pay</strong> — All creation actions. Not new. Out of scope for MLP with Limits.</li><li><strong>Pending on Me</strong> — Payments requiring the user\'s approval or authorisation. New.</li><li><strong>Pending on Others</strong> — Payments waiting on another user\'s action. New.</li><li><strong>All Transactions</strong> — All authorised and rejected payments. New.</li></ul>'},
+    {sc:'Pending on Me',story:'<ul><li>FC: payments requiring their approval</li><li>Admin: payments requiring their approval or authorisation</li><li>Tabs within this section are based on bank accounts</li><li>Each tab only shows payments for that bank account</li></ul>'},
+    {sc:'Pending on Others',story:'<ul><li>FC: payments they cannot approve (maker-checker) + payments awaiting another user\'s approval before them</li><li>Admin: payments they cannot approve/authorise (maker-checker) + payments awaiting another user\'s approval + payments awaiting another user\'s authorisation</li></ul>'},
+    {sc:'All Transactions',story:'Two tabs:<ul><li><strong>All Transactions</strong> — authorised payments with statuses In Progress, Success, Failed</li><li><strong>Rejected</strong> — all rejected payments regardless of the stage at which they were rejected</li></ul>'},
+    {sc:'Filters',story:'Available across all sections:<ul><li>Quick filters — fast inline filtering without opening a filter panel</li><li>All Filters — full filter panel with all available attributes</li><li>Sort by — configurable sort order per section</li></ul>'},
+  ]},
+  V2:{type:'v',title:'Payment Creation (Pending on Others)',rows:[
+    {sc:'Story',story:'As a Finance Controller or Admin creates a payment, it enters the configured approval workflow and awaits approval/authorisation from the respective users. Creator should be able to track progress at all stages and also have the ability to reject the payment at any point.'},
+    {sc:'Creator submits payment',story:'FC or Admin submits a payment (Bill, Reimbursement, Direct Pay). System evaluates the configured approval rule and routes the payment into the workflow immediately.'},
+    {sc:'Payment state on creation',story:'<ul><li>Payment enters <strong>Pending Approval</strong> state (if approval configured) or <strong>Pending Auth</strong> (if auto-approval configured)</li><li>Payment does not appear in creator\'s Pending on Me if Maker Checker is on</li><li>User stays in the section they are in — no redirection</li></ul>'},
+    {sc:'L0 — Table view (Pending on Others)',story:'New columns added to existing list:<ul><li>Approval progress bar — shows current level vs total levels</li><li>Action required from — names of configured approvers (up to 2, then +x)</li><li>No Approve or Authorise actions — read only</li><li>Reject available</li></ul>'},
+    {sc:'L1 — Side view (Pending on Others)',story:'New values added to existing side view:<ul><li>Approval progress tracker — step-by-step view of each level, who is required, which are complete vs pending (updates in real time)</li><li>No Approve or Authorise buttons</li><li>Reject available</li></ul>'},
+    {sc:'Approval routing — Auto Approval',story:'<ul><li><strong>Auto Approval (only Auth)</strong> — skips approval, goes directly to Pending Auth</li><li><strong>Auto Approval + Maker Checker</strong> — skips approval, creator cannot authorise own payment, routes to different user</li></ul>'},
+    {sc:'Approval routing — Single Approval',story:'<ul><li><strong>Single + Auth</strong> — approval then auth, sequential</li><li><strong>Single + Maker Checker</strong> — creator excluded from approver pool</li><li><strong>Single + Non-Consecutive</strong> — all approvers notified simultaneously, any one approval advances it</li><li><strong>Single + Maker Checker + Non-Consecutive</strong> — same, creator excluded</li></ul>'},
+    {sc:'Approval routing — Multi Approval',story:'<ul><li><strong>Multi + Auth</strong> — sequential levels, each must complete before next</li><li><strong>Multi + Maker Checker</strong> — creator excluded at every level</li><li><strong>Multi + Non-Consecutive</strong> — each level is parallel (m of n)</li><li><strong>Multi + Maker Checker + Non-Consecutive</strong> — same, creator excluded at every level</li></ul>'},
+    {sc:'Maker Checker ON',story:'Creator excluded from approving their own payment at any level. Payment does not appear in their Pending on Me for approval. Routes to the next eligible approver who is not the creator.'},
+    {sc:'Maker Checker OFF',story:'No exclusion applied. Creator may appear in their own Pending on Me if configured as an approver. Payment flows through the standard approval chain.'},
+  ]},
+  V3:{type:'v',title:'Approve, Authorise & Reject (Pending on Me)',rows:[
+    {sc:'Story',story:'As a Finance Controller or Admin, I want to approve, authorise, or reject payments from my Pending on Me section so that I can action payments assigned to me within my configured limits and keep the payment workflow moving.'},
+    {sc:'L0 — Table view (Pending on Me)',story:'New columns added:<ul><li>Approval progress bar — current level vs total</li><li>Action required from — up to 2 names, then +x</li><li>Inline Approve and Reject action buttons on the row</li></ul>'},
+    {sc:'L1 — Side view (Pending on Me)',story:'New values added:<ul><li>Approval progress tracker — step-by-step, updates in real time</li><li>Approve/Authorise button (depending on state) — enabled if within daily limit</li><li>Reject button — always enabled</li></ul>'},
+    {sc:'Approve — single payment',story:'Inline or L1. No OTP or password required. Progress bar updates immediately. If final level → Pending Auth. If more levels → routes to next approver\'s Pending on Me.'},
+    {sc:'Approve — multiple payments',story:'Select via checkboxes. Selection bar shows count and total. Proceed → Review modal → Transaction Password → OTP → Processing. Each payment decrements daily approval counter individually.'},
+    {sc:'Authorise — single payment',story:'Admin only. Inline or L1. Routes through Transaction Password → OTP → Processing. On success: payment moves to All Transactions, row disappears, auth counter decrements.'},
+    {sc:'Authorise — multiple payments',story:'Admin only. Single auth flow covers all selected. Each payment decrements auth counter individually. Processing screen shown — do not close.'},
+    {sc:'Approve & Authorise — mixed selection',story:'Admin only. Selection bar shows split: "For approval (Rs X)" and "For authorisation (Rs Y)". Single flow covers both. Approved payments route per rule. Authorised payments move to All Transactions.'},
+    {sc:'Limit states — approaching',story:'<ul><li><strong>Approval approaching</strong> — amber banner, approve still enabled, headroom shown</li><li><strong>Auth approaching</strong> — amber banner, authorise still enabled, headroom shown</li><li><strong>Both approaching</strong> — single combined amber banner, both still enabled</li></ul>'},
+    {sc:'Limit states — exhausted',story:'<ul><li><strong>Only approval exhausted</strong> — approve disabled, authorise and reject unaffected</li><li><strong>Only auth exhausted</strong> — authorise disabled, approve and reject unaffected</li><li><strong>Approval approaching + auth exhausted</strong> — single banner, authorise disabled, approve active within headroom</li><li><strong>Auth approaching + approval exhausted</strong> — single banner, approve disabled, authorise active within headroom</li><li><strong>Both exhausted</strong> — single combined red banner, both disabled, reject always active</li></ul>'},
+    {sc:'Reject — single payment',story:'Admin or FC. Inline or L1. Available at Pending Approval and Ready to Authorise stages. Reason modal — mandatory. No OTP or password required. Payment moves to Rejected immediately, creator notified.'},
+    {sc:'Reject — multiple payments',story:'Select multiple, click Reject. Single reason modal — reason applied to all selected. No auth flow. All move to Rejected immediately.'},
+    {sc:'Reject — never blocked',story:'Reject is never disabled by limit state. Even when both limits are exhausted and all other actions are blocked, Reject remains fully enabled for every role on every payment.'},
+  ]},
+  V4:{type:'v',title:'Payments Processed (All Transactions)',rows:[
+    {sc:'Story',story:'As a Finance Controller or Admin, I want to view all payments that have been fully processed — both completed and rejected — so that I have a clear audit trail and can track the outcome of every payment.'},
+    {sc:'All Transactions — what it shows',story:'All authorised payments sent to the bank. Statuses: <strong>In Progress</strong> (sent, awaiting confirmation), <strong>Success</strong> (bank confirmed), <strong>Failed</strong> (bank returned error). Read-only — no actions available.'},
+    {sc:'All Transactions — columns',story:'Beneficiary, Beneficiary Account, Payment Amount, Pay on Date, Pay method, Status, Authorised by, Authorised on.'},
+    {sc:'All Transactions — L1',story:'Full payment summary, authorisation details (who, when), full approval history with actor and timestamp at each level, Comments and Docs tab. No actions.'},
+    {sc:'All Transactions — filters',story:'<ul><li>Quick filters: Status, Date range, Payment method, Bank account</li><li>All Filters: Beneficiary, Amount range, Department, Cost Centre, Business Unit, Branch, Category, Created by, Authorised by</li><li>Sort by: Authorised on (default), Payment amount, Beneficiary name</li></ul>'},
+    {sc:'Failed payments',story:'Remain in All Transactions with Failed status chip. Failure reason visible in L1. Re-initiation of failed payments is out of scope for MLP.'},
+    {sc:'Rejected — what it shows',story:'All payments rejected at any stage — during approval, before auth, or by the creator. Read-only — no actions available.'},
+    {sc:'Rejected — columns',story:'Beneficiary, Beneficiary Account, Payment Amount, Pay on Date, Pay method, Rejected by, Rejected on, Rejection reason.'},
+    {sc:'Rejected — L1',story:'Full payment summary, rejection details (who rejected, at which stage, reason), approval history up to point of rejection, Comments and Docs tab. No actions.'},
+    {sc:'Rejected — filters',story:'<ul><li>Quick filters: Date range, Rejected by, Payment method, Bank account</li><li>All Filters: Beneficiary, Amount range, Department, Cost Centre, Business Unit, Branch, Category, Created by, Rejected by</li><li>Sort by: Rejected on (default), Payment amount, Beneficiary name</li></ul>'},
+    {sc:'Rejected — visibility',story:'Both Admin and FC can see all rejected payments regardless of who rejected them or at what stage.'},
+  ]},
+  C1:{type:'c',title:'Limit Awareness',spans:'V2, V3',rows:[
+    {sc:'Banner system',story:'<ul><li><strong>No banner</strong> — both limits within range</li><li><strong>Amber banner</strong> — approaching ~80%, all actions still enabled</li><li><strong>Red banner</strong> — exhausted, affected action disabled</li><li>Single combined banner when both limits are in any warning/exhausted state</li></ul>'},
+    {sc:'Independent button logic',story:'Approve and Authorise controlled by their own limits independently. One can be disabled while the other remains active. Both disabled only when both limits are exhausted.'},
+    {sc:'Tooltips — never silent',story:'<ul><li>Disabled checkbox: "This payment exceeds your per-payment limit"</li><li>Disabled Approve/Authorise: "Your daily [approval/authorisation] limit has been reached"</li><li>Disabled Proceed: "Selected total exceeds your remaining daily limit"</li></ul>'},
+    {sc:'Daily reset',story:'All limit counters reset automatically at midnight IST. No admin action required. Banners clear and disabled buttons re-enable on reset.'},
+  ]},
+  C2:{type:'c',title:'Maker Checker & Role-based Access',spans:'V1 → V4',rows:[
+    {sc:'Role definitions',story:'<ul><li><strong>Admin</strong> — approve + authorise, both limits apply, sees all sections</li><li><strong>FC (Creator only)</strong> — create only, no limits, Pending on Others read-only</li><li><strong>FC (Creator + Approver)</strong> — create + approve, approval limit only, Authorise never shown</li></ul>'},
+    {sc:'Maker Checker ON',story:'Creator excluded from approving their own payment at any level. Routes to next eligible approver who is not the creator. Payment does not appear in creator\'s Pending on Me for approval.'},
+    {sc:'Maker Checker OFF',story:'No exclusion. Creator may appear in their own Pending on Me if configured as an approver. Standard approval chain applies.'},
+    {sc:'Section visibility by role',story:'<ul><li><strong>Admin</strong> — Ready to Pay, Pending on Me, Pending on Others, All Transactions</li><li><strong>FC Creator + Approver</strong> — Ready to Pay, Pending on Me, Pending on Others</li><li><strong>FC Creator only</strong> — Ready to Pay, Pending on Others</li></ul>'},
+  ]},
+  C3:{type:'c',title:'Notifications & Audit Trail',spans:'V2, V3, V4',rows:[
+    {sc:'Notification triggers',story:'<ul><li><strong>Payment created & routed</strong> — first approver notified</li><li><strong>Approval completed</strong> — next approver or authoriser notified</li><li><strong>Authorisation completed</strong> — creator notified with reference, amount, beneficiary</li><li><strong>Rejection</strong> — creator notified immediately with rejection reason. Not aggregated.</li></ul>'},
+    {sc:'Aggregation',story:'All notifications except rejection are aggregated via Vidya. Events of the same type grouped into a single digest — event type, count, total amount, deep link to section.'},
+    {sc:'Audit trail',story:'Every approval, authorisation, and rejection is recorded with: actor name, action taken, timestamp, and reason (for rejections). Visible in L1 under approval history for all users with access to that payment.'},
+  ]},
+};
+
+let act = null;
+
+function midX(el) {
+  const card = document.querySelector('.card');
+  const cr = card.getBoundingClientRect();
+  const er = el.getBoundingClientRect();
+  return er.left - cr.left + er.width / 2;
+}
+
+function drawArcs(vid) {
+  const svg = document.getElementById('asvg');
+  const wrap = document.getElementById('arcwrap');
+  svg.innerHTML = '';
+  if (!vid) { wrap.style.height='16px'; svg.setAttribute('height','16'); return; }
+  const vEl = document.querySelector(`.vc[data-id="${vid}"]`);
+  if (!vEl) { wrap.style.height='16px'; return; }
+  const hits = Object.entries(cn).filter(([c,vs])=>vs.includes(vid)).map(([c])=>c);
+  if (!hits.length) { wrap.style.height='16px'; return; }
+  const H = 88;
+  wrap.style.height = H+'px';
+  const W = wrap.offsetWidth||900;
+  svg.setAttribute('width',W); svg.setAttribute('height',H); svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const x1 = midX(vEl);
+  hits.forEach(cid => {
+    const cEl = document.querySelector(`.cc[data-id="${cid}"]`);
+    if (!cEl) return;
+    const x2 = midX(cEl);
+    const dx = x2 - x1;
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',`M ${x1} 4 C ${x1+dx*0.05} 55, ${x2-dx*0.05} 55, ${x2} ${H-4}`);
+    path.setAttribute('fill','none'); path.setAttribute('stroke','#F0A830');
+    path.setAttribute('stroke-width','1.8'); path.setAttribute('stroke-dasharray','5,4');
+    path.setAttribute('stroke-linecap','round');
+    svg.appendChild(path);
+    const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    dot.setAttribute('cx',x2); dot.setAttribute('cy',H-4);
+    dot.setAttribute('r','3.5'); dot.setAttribute('fill','#F0A830');
+    svg.appendChild(dot);
+  });
+}
+
+function tap(id) {
+  act = (act === id) ? null : id;
+  render();
+}
+
+function render() {
+  const isV = act && D[act] && D[act].type==='v';
+  const isC = act && D[act] && D[act].type==='c';
+
+  document.querySelectorAll('.vc').forEach(c => c.classList.toggle('sel', c.dataset.id===act));
+  document.querySelectorAll('.cc').forEach(c => {
+    const cid = c.dataset.id;
+    c.classList.remove('hi','dim');
+    if (!act) return;
+    if (isV) { const hit=cn[cid]&&cn[cid].includes(act); c.classList.toggle('hi',hit); c.classList.toggle('dim',!hit); }
+    else if (isC) { c.classList.toggle('hi', cid===act); }
+  });
+
+  isV ? drawArcs(act) : drawArcs(null);
+
+  const area = document.getElementById('pa');
+  area.innerHTML = '';
+}
+
+window.addEventListener('resize', ()=>{ if(act&&D[act]&&D[act].type==='v') drawArcs(act); });
+</script>
+</body>
+</html>
