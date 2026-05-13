@@ -105,9 +105,7 @@
 <div class="card">
 
   <div class="doc-title">MLP with Limits — Story Map</div>
-  <div class="doc-sub">4 Lifecycle Verticals · 3 Cross-cutting Stories · Version May 2026</div>
-
-
+  <div class="doc-sub">4 Lifecycle Verticals · 2 Cross-cutting Stories · Version May 2026</div>
 
   <div class="legend">
     <div class="leg"><div class="leg-sq" style="background:#F0EFFE;border:1.5px solid #CECBF6"></div><span>Lifecycle vertical — click to expand</span></div>
@@ -131,8 +129,7 @@
   <div class="zlbl">Cross-cutting (horizontal)</div>
   <div class="crow" id="crow">
     <div class="cc" data-id="C1" onclick="tap('C1')"><div class="cid">C1</div><div class="ct">Limit<br>Awareness</div></div>
-    <div class="cc" data-id="C2" onclick="tap('C2')"><div class="cid">C2</div><div class="ct">Maker Checker<br>&amp; Role-based<br>Access</div></div>
-    <div class="cc" data-id="C3" onclick="tap('C3')"><div class="cid">C3</div><div class="ct">Notifications<br>&amp; Audit Trail</div></div>
+    <div class="cc" data-id="C2" onclick="tap('C2')"><div class="cid">C2</div><div class="ct">Notifications<br>&amp; Audit Trail</div></div>
   </div>
 
   <div id="pa"></div>
@@ -141,8 +138,7 @@
 <script>
 const cn = {
   C1: ['V2','V3'],
-  C2: ['V1','V2','V3','V4'],
-  C3: ['V2','V3','V4'],
+  C2: ['V2','V3','V4'],
 };
 
 const D = {
@@ -200,13 +196,7 @@ const D = {
     {sc:'Tooltips — never silent',story:'<ul><li>Disabled checkbox: "This payment exceeds your per-payment limit"</li><li>Disabled Approve/Authorise: "Your daily [approval/authorisation] limit has been reached"</li><li>Disabled Proceed: "Selected total exceeds your remaining daily limit"</li></ul>'},
     {sc:'Daily reset',story:'All limit counters reset automatically at midnight IST. No admin action required. Banners clear and disabled buttons re-enable on reset.'},
   ]},
-  C2:{type:'c',title:'Maker Checker & Role-based Access',spans:'V1 → V4',rows:[
-    {sc:'Role definitions',story:'<ul><li><strong>Admin</strong> — approve + authorise, both limits apply, sees all sections</li><li><strong>FC (Creator only)</strong> — create only, no limits, Pending on Others read-only</li><li><strong>FC (Creator + Approver)</strong> — create + approve, approval limit only, Authorise never shown</li></ul>'},
-    {sc:'Maker Checker ON',story:'Creator excluded from approving their own payment at any level. Routes to next eligible approver who is not the creator. Payment does not appear in creator\'s Pending on Me for approval.'},
-    {sc:'Maker Checker OFF',story:'No exclusion. Creator may appear in their own Pending on Me if configured as an approver. Standard approval chain applies.'},
-    {sc:'Section visibility by role',story:'<ul><li><strong>Admin</strong> — Ready to Pay, Pending on Me, Pending on Others, All Transactions</li><li><strong>FC Creator + Approver</strong> — Ready to Pay, Pending on Me, Pending on Others</li><li><strong>FC Creator only</strong> — Ready to Pay, Pending on Others</li></ul>'},
-  ]},
-  C3:{type:'c',title:'Notifications & Audit Trail',spans:'V2, V3, V4',rows:[
+  C2:{type:'c',title:'Notifications & Audit Trail',spans:'V2, V3, V4',rows:[
     {sc:'Notification triggers',story:'<ul><li><strong>Payment created & routed</strong> — first approver notified</li><li><strong>Approval completed</strong> — next approver or authoriser notified</li><li><strong>Authorisation completed</strong> — creator notified with reference, amount, beneficiary</li><li><strong>Rejection</strong> — creator notified immediately with rejection reason. Not aggregated.</li></ul>'},
     {sc:'Aggregation',story:'All notifications except rejection are aggregated via Vidya. Events of the same type grouped into a single digest — event type, count, total amount, deep link to section.'},
     {sc:'Audit trail',story:'Every approval, authorisation, and rejection is recorded with: actor name, action taken, timestamp, and reason (for rejections). Visible in L1 under approval history for all users with access to that payment.'},
